@@ -10,10 +10,14 @@ interface task {
   id: string;
   title: string;
 }
-let tasks: task[];
+let tasks: task[] = [];
 addTaskBtn.addEventListener("click", (e) => {
   e.preventDefault();
-  addTaskToDB(taskInput.value);
+  if (taskInput.value) {
+    addTaskToDB(taskInput.value);
+    taskInput.value = "";
+    taskInput.focus();
+  }
 });
 removeAllTasksBtn.addEventListener("click", () => {
   tasks = [];
@@ -26,10 +30,10 @@ function addTaskToDB(inputTask: string): void {
   updateUiTasks();
 }
 
-function updateUiTasks() {
+function updateUiTasks(): void {
   taskListUl.innerHTML = "";
   tasks.forEach((task) => {
-    const taskLi = `<li data-id="${task.id}"
+    const taskLi: string = `<li data-taskid="${task.id}"
         class="flex items-center justify-between rounded bg-gray-50 p-3 shadow-sm"
       >
         <span>${task.title}</span>
@@ -38,22 +42,25 @@ function updateUiTasks() {
         </button>
       </li>`;
     taskListUl.insertAdjacentHTML("beforeend", taskLi);
-    const liElement = document.querySelector(
-      `[data-id='${task.id}']`,
-    ) as HTMLLIElement;
+  });
+  const liElements = document.querySelectorAll(
+    "[data-taskid]",
+  ) as NodeListOf<HTMLLIElement>;
+  liElements.forEach((liElement) => {
+    const taskId = liElement.dataset.taskid as string;
     const btnElement = liElement.querySelector("button") as HTMLButtonElement;
-    btnElement.addEventListener("click", () => removeTaskFromDB(task.id));
+    btnElement.addEventListener("click", () => removeTaskFromDB(taskId));
   });
 }
-function removeTaskFromDB(taskId: string) {
+function removeTaskFromDB(taskId: string): void {
   tasks = tasks.filter((task) => task.id !== taskId);
   saveDB();
   updateUiTasks();
 }
-function getDB() {
+function getDB(): void {
   tasks = JSON.parse(localStorage.getItem("tasks") as string) || [];
 }
-function saveDB() {
+function saveDB(): void {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 document.addEventListener("DOMContentLoaded", () => {
